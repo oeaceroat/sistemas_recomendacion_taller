@@ -25,11 +25,6 @@
 
                 var $text_1 = $('#text_1').val();
 
-
-                if($text_1==''){
-                    $text_1=null
-                }
-
                 console.log("var " + $text_1);
 
                 var $url_get_recomendacion = "/sistemas_colaborativos/" + $text_1 + "/recomendar/";
@@ -41,42 +36,66 @@
 
 
                 });
+
+
+                var $url_populares = "/sistemas_colaborativos/populares/";
+                console.log($url_populares)
+
+                $.getJSON($url_populares, function (jsonFromFile) {
+
+                    var populares = {total:1, rows: jsonFromFile.data};
+                    $('#table_3').bootstrapTable(jsonFromFile.data);
+                    $('#table_3').bootstrapTable('load', populares);
+
+                });
+
+
+                var $url_lanzamientos = "/sistemas_colaborativos/lanzamientos/";
+                console.log($url_lanzamientos)
+
+                $.getJSON($url_lanzamientos, function (jsonFromFile) {
+
+                    var lanzamientos = {total:1, rows: jsonFromFile.data};
+                    $('#table_5').bootstrapTable(jsonFromFile.data);
+                    $('#table_5').bootstrapTable('load', lanzamientos);
+
+                });
+
+
+                var $url_actividad = "/sistemas_colaborativos/" + $text_1 + "/actividad/";
+                console.log($url_actividad)
+
+                $.getJSON($url_actividad, function (jsonFromFile) {
+
+                    var actividad = {total:1, rows: jsonFromFile.data};
+                    $('#table_4').bootstrapTable(jsonFromFile.data);
+                    $('#table_4').bootstrapTable('load', actividad);
+
+                });
          });
 
           $('#btnSearchTrack').on('click', function (e) {
 
                 var $text_2 = $('#text_2').val();
 
-                if($text_2==''){
-                    $text_2=null
-                }
-
                 console.log("var " + $text_2);
 
                 var $url_buscar_cancion = "/sistemas_colaborativos/" + $text_2 + "/buscar_cancion/";
-                new_data = ''
+
                 $.getJSON($url_buscar_cancion, function (jsonFromFile) {
-                    console.log("entraaa");
 
                     var object = {total:1, rows: jsonFromFile.data};
                     $('#table_2').bootstrapTable(jsonFromFile.data);
                     $('#table_2').bootstrapTable('load', object);
 
-
                 });
-
 
             });
 
 
             $('#btnSearchTrackArtist').on('click', function (e) {
 
-
                 var $text_3 = $('#text_3').val();
-
-                if($text_3==''){
-                    $text_3=null
-                }
 
                 console.log("var " + $text_3);
 
@@ -87,7 +106,39 @@
                     $('#table_2').bootstrapTable(jsonFromFile.data);
                     $('#table_2').bootstrapTable('load', object);
 
+                });
 
+            });
+
+            $('#btnRating').on('click', function (e) {
+
+                var $text_1 = $('#text_1').val();
+                var $text_4 = $('#text_4').val();
+                var $text_5 = $('#text_5').val();
+                var $text_6 = $('#text_6').val();
+
+                console.log("var rating " + $text_6);
+
+                var $url_calificar = "/sistemas_colaborativos/" + $text_1 + "/" + $text_4 + "/" + $text_5 + "/" + $text_6  + "/calificar/";
+                $.getJSON($url_calificar, function (jsonFromFile) {
+
+                    var object = {total:1, rows: jsonFromFile.data};
+                    coonsole.log("Objeto calificado");
+
+                });
+
+            });
+
+            $('#btnAddTrack').on('click', function (e) {
+
+                var $text_7 = $('#text_7').val();
+                var $text_8 = $('#text_8').val();
+
+                var $url_addTrack = "/sistemas_colaborativos/" + $text_7 + "/" + $text_8 + "/add_track/";
+                $.getJSON($url_addTrack, function (jsonFromFile) {
+
+                    var object = {total:1, rows: jsonFromFile.data};
+                    coonsole.log("Canción agregada");
 
                 });
 
@@ -130,107 +181,203 @@
 
    <div class="container" style="width:1800px">
 
-        <div class="col-lg-8 col-lg-4">
-            <h3> Sistema de Recomendación Colaborativo</h3>
+       <h3> Sistema de Recomendación Colaborativo</h3>
 
-            <!--<div class="radio">-->
-                <!--<label class="radio-inline"><input type="radio" name="optradio_2" value="title" checked>Obra de arte</label>-->
-                <!--<label class="radio-inline"><input type="radio" name="optradio_2" value="author">Autor</label>-->
-            <!--</div>-->
-            <div>
-                <label></label>
-            </div>
-            <form>
-              <div class="form-row">
-                <div class="col-4">
-                    <input type="text" class="form-control" id="text_1" placeholder="Ingrese usuario">
-                    <small id="text_1lHelp" class="form-text text-muted">Usuario existente o nuevo</small>
-                </div>
-                <div class="col">
-                 <button type="button" class="btn btn-primary" id="btnSearch_1">Ingresar</button>
-                </div>
-              </div>
-            </form>
+       <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="home-tab" data-toggle="tab" href="#user" role="tab" aria-controls="home" aria-selected="true">Usuario</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="profile-tab" data-toggle="tab" href="#admin" role="tab" aria-controls="home" aria-selected="false">Administrador</a>
+          </li>
 
-            <div>
-                <label></label>
-            </div>
+        </ul>
+       <div class="tab-content" id="myTabContent">
+          <div class="tab-pane fade show active" id="user" role="tabpanel" aria-labelledby="home-tab">
 
-            <h4> Búsqueda de ítems</h4>
-
-             <form>
-              <div class="form-row">
-                <div class="col-4">
-                    <input type="text" class="form-control" id="text_2" placeholder="Nombre canción">
-                    <small id="text_2lHelp" class="form-text text-muted">Ingrese nombre canción</small>
-
-                </div>
-
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="btnSearchTrack">Buscar</button>
-                </div>
-              </div>
-            </form>
-
-             <form>
-              <div class="form-row">
-                <div class="col-4">
-                    <input type="text" class="form-control" id="text_3" placeholder="Nombre artista">
-                    <small id="text_3lHelp" class="form-text text-muted">Ingrese nombre artista</small>
-
-                </div>
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="btnSearchTrackArtist">Buscar</button>
-                </div>
-              </div>
-            </form>
+            <div class="col-lg-8 col-lg-4">
 
 
-            <h4> Resultado búesqueda</h4>
+                <!--<div class="radio">-->
+                    <!--<label class="radio-inline"><input type="radio" name="optradio_2" value="title" checked>Obra de arte</label>-->
+                    <!--<label class="radio-inline"><input type="radio" name="optradio_2" value="author">Autor</label>-->
+                <!--</div>-->
+                <div> <label></label></div>
 
-            <div >
-               <table id="table_2" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
-
-                <thead class="thead-dark">
-                    <tr>
-                        <th data-field="traname">Canción</th>
-                        <th data-field="artname">Artista</th>
-                    </tr>
-                </thead>
-                </table>
-
-            </div>
-
-            <h5> Calificar Canción:</h5>
-            <form>
-              <div class="form-row">
-                <div class="col-4">
-                    <input type="text" class="form-control" id="text_4" placeholder="Nombre artista">
-                    <small id="text_5lHelp" class="form-text text-muted">Ingrese nombre Canción</small>
-
-                </div>
-                  <div class="col-4">
-                    <input type="text" class="form-control" id="text_5" placeholder="Nombre artista">
-                    <small id="text_6lHelp" class="form-text text-muted">Ingrese nombre artista</small>
+                <form>
+                  <div class="form-row">
+                    <div class="col-4">
+                        <input type="text" class="form-control" id="text_1" placeholder="Usuario">
+                        <small id="text_1lHelp" class="form-text text-muted">Usuario existente o nuevo</small>
+                    </div>
+                    <div class="col">
+                     <button type="button" class="btn btn-primary" id="btnSearch_1">Iniciar Sesión</button>
+                    </div>
                   </div>
+                </form>
 
-                  <div class="col-2">
-                    <input type="number" min="1" max="5" class="form-control" id="text_6" placeholder="Calificación">
-                    <small id="text_7lHelp" class="form-text text-muted">Calificación 1 a 5</small>
+               <div> <label></label></div>
+
+                <h4> Buscar canciones</h4>
+
+                 <form>
+                  <div class="form-row">
+                    <div class="col-4">
+                        <input type="text" class="form-control" id="text_2" placeholder="Canción">
+                        <small id="text_2lHelp" class="form-text text-muted">Ingrese nombre canción</small>
+
+                    </div>
+
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" id="btnSearchTrack">Buscar</button>
+                    </div>
                   </div>
+                </form>
 
+                 <form>
+                  <div class="form-row">
+                    <div class="col-4">
+                        <input type="text" class="form-control" id="text_3" placeholder="Artista">
+                        <small id="text_3lHelp" class="form-text text-muted">Ingrese nombre artista</small>
 
-                <div class="col">
-                    <button type="button" class="btn btn-primary" id="btnRating1">Calificar</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" id="btnSearchTrackArtist">Buscar</button>
+                    </div>
+                  </div>
+                </form>
+
+                <div> <label></label></div>
+                <h4> Resultado búesqueda</h4>
+
+                <div >
+                   <table id="table_2" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+
+                    <thead class="thead-dark">
+                        <tr>
+                            <th data-field="traname">Canción</th>
+                            <th data-field="artname">Artista</th>
+                        </tr>
+                    </thead>
+                    </table>
+
                 </div>
-              </div>
-            </form>
 
+                <div> <label></label></div>
+
+                <h5> Calificar Canción:</h5>
+                <form>
+                  <div class="form-row">
+                    <div class="col-4">
+                        <input type="text" class="form-control" id="text_4" placeholder="Canción">
+                        <small id="text_4lHelp" class="form-text text-muted">Ingrese nombre canción</small>
+
+                    </div>
+                      <div class="col-4">
+                        <input type="text" class="form-control" id="text_5" placeholder="Artista">
+                        <small id="text_5lHelp" class="form-text text-muted">Ingrese nombre artista</small>
+                      </div>
+
+                      <div class="col-2">
+                        <input type="number" min="1" max="5" class="form-control" id="text_6" placeholder="Califica">
+                        <small id="text_6lHelp" class="form-text text-muted">Calificación 1 a 5</small>
+                      </div>
+
+
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" id="btnRating">Calificar</button>
+                    </div>
+                  </div>
+                </form>
+
+               <div> <label></label></div>
+
+                <h5> Canciones más poulares:</h5>
+                <div >
+                   <table id="table_3" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+
+                    <thead class="thead-dark">
+                        <tr>
+                            <th data-field="traname">Canción</th>
+                            <th data-field="artname">Artista</th>
+                            <th data-field="rating_count">Calificaciones</th>
+                        </tr>
+                    </thead>
+                    </table>
+
+                </div>
+
+                <div> <label></label></div>
+
+                <h5> Nuevas canciones:</h5>
+                <div >
+                   <table id="table_5" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+
+                    <thead class="thead-dark">
+                        <tr>
+                            <th data-field="traname">Canción</th>
+                            <th data-field="artname">Artista</th>
+                        </tr>
+                    </thead>
+                    </table>
+
+                </div>
+
+                <div> <label></label></div>
+
+                <h5> Actividad del usuario:</h5>
+                <div >
+                   <table id="table_4" class="table table-striped table-bordered table-sm" cellspacing="0" width="100%">
+
+                    <thead class="thead-dark">
+                        <tr>
+                            <th data-field="traname">Canción</th>
+                            <th data-field="artname">Artista</th>
+                            <th data-field="blend_rank">Calificación</th>
+                        </tr>
+                    </thead>
+                    </table>
+
+            </div>
 
         </div>
 
-    </div>
+          </div>
+          <div class="tab-pane fade" id="admin" role="tabpanel" aria-labelledby="home-tab">
+              <div class="col-lg-8 col-lg-4">
 
+                  <div> <label></label></div>
+                  <h5> Agregar nueva canción al sistema</h5>
+                  <form>
+
+                  <div class="form-col">
+
+                      <div> <label></label></div>
+                    <div class="col-4">
+                        <small id="text_7lHelp" class="form-text text-muted">Ingrese Canción</small>
+                        <input type="text" class="form-control" id="text_7" placeholder="Nombre canción">
+                    </div>
+
+                      <div> <label></label></div>
+                    <div class="col-4">
+                        <small id="text_8lHelp" class="form-text text-muted">Ingrese Artista</small>
+                        <input type="text" class="form-control" id="text_8" placeholder="Nombre artista">
+                    </div>
+
+                      <div> <label></label></div>
+                    <div class="col">
+                     <button type="button" class="btn btn-primary" id="btnAddTrack">Agregar</button>
+                    </div>
+                  </div>
+                </form>
+
+              </div>
+          </div>
+
+        </div>
+
+
+    </div>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
