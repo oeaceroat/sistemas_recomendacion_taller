@@ -14,4 +14,6 @@ urlpatterns = [
     path('lanzamientos/', views.lanzamientos, name='lanzamientos'),
     path('<str:user>/actividad/', views.actividad, name='actividad'),
     path('<str:traname>/<str:artname>/add_track/', views.add_track, name='add_track'),
+    path('<str:usuario>/recomendar_usuario/', views.get_recomendacion_user, name='get_recomendacion_usuario')
+
 ]
