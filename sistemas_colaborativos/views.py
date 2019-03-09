@@ -138,9 +138,9 @@ def populares(request):
             'rating_count': {'$sum': 1},
             'rating_avg': {'$avg': '$blend_rank'}
         }},
-        # {"$match": {"rating_avg": {"$gte":4.0}}},
+        {"$match": {"rating_avg": {"$gte":4.0}, "rating_count": {"$gte":10} }},
         {'$sort': {'rating_count': -1, }},
-        {'$limit': 50}
+        {'$limit': 20}
     ])
 
     data = []
@@ -150,6 +150,7 @@ def populares(request):
    #     obj['traname'] = t['_id']['traname']
         obj['artname'] = t['_id']['artname']
         obj['rating_count'] = t['rating_count']
+        obj['rating_avg'] = t['rating_avg']
         data.append(obj)
 
     response_data = {}
