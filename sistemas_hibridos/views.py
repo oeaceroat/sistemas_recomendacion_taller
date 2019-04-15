@@ -8,7 +8,7 @@ client = MongoClient()
 client = MongoClient('127.0.0.1', 27017)
 
 
-db = client.sisrec_taller2
+db = client.sisrec_taller1
 
 
 def index(request):
@@ -22,16 +22,29 @@ def get_recomendacion(request,usuario):
 
     collection = db.user
     user = collection.find_one({'user_id':usuario})
-
+    message = ''
+    data = []
     if user is None:
         print('Nuevo usuario')
+        message = 'new_user'
+        data = [
+            {'res_id': 'r1', 'res_name': 'restaurante 1'},
+            {'res_id': 'r2', 'res_name': 'restaurante 2'},
+            {'res_id': 'r3', 'res_name': 'restaurante 3'},
+            {'res_id': 'r4', 'res_name': 'restaurante 4'},
+            {'res_id': 'r5', 'res_name': 'restaurante 5'}
+        ]
     else:
         print('Lista de recomendación')
+        message = 'Hola ' + usuario + ', encuentra a tus artistas favoritos y descubre muchosssss más'
+        data = []
 
-    message = 'Hola ' + usuario + ', encuentra a tus artistas favoritos y descubre muchos más'
+    print('...................... ', message )
+
 
     response_data = {}
     response_data['message'] = message
+    response_data['data'] = data
     print(message)
 
     return JsonResponse(response_data)

@@ -27,25 +27,51 @@
 
                 console.log("var " + $text_1);
 
-                var $url_get_recomendacion = "/sistemas_colaborativos/" + $text_1 + "/recomendar/";
+                var $url_get_recomendacion = "/sistemas_hibridos/" + $text_1 + "/recomendar/";
                 console.log($url_get_recomendacion)
                 $.getJSON($url_get_recomendacion, function (jsonFromFile) {
 
 
                     var $message = jsonFromFile.message
-                    let msgRecomendar = document.getElementById('msgRecomendar');
-                    msgRecomendar.innerText = $message;
 
-                });
+                    if ($message == "new_user") {
+                        console.log("mostar menú de categorias")
 
 
-                var $url_get_recomendacion_usuario = "/sistemas_colaborativos/" + $text_1 + "/recomendar_usuario/";
-                console.log($url_get_recomendacion_usuario)
-                $.getJSON($url_get_recomendacion_usuario, function (jsonFromFile) {
+                        let dropdown = $('#category-dropdown');
 
-                    var for_user = {total:1, rows: jsonFromFile.data};
-                    $('#table_6').bootstrapTable(jsonFromFile.data);
-                    $('#table_6').bootstrapTable('load', for_user);
+                        dropdown.empty();
+
+                        dropdown.append('<option selected="true" disabled>Dinos lo que más te gusta</option>');
+                        dropdown.prop('selectedIndex', 0);
+
+                        //const url = 'https://api.myjson.com/bins/7xq2x';
+
+                        // Populate dropdown with list of provinces
+                        //$.getJSON(url, function (data) {
+                          var $categories = jsonFromFile.data
+                          $.each($categories, function (key, entry) {
+                            dropdown.append($('<option></option>').attr('value', entry.res_id).text(entry.res_name));
+                          })
+                        //});
+
+
+
+                    } else {
+                        console.log("mostrar reconedacions usuario existente")
+                        let msgRecomendar = document.getElementById('msgRecomendar');
+                        msgRecomendar.innerText = $message;
+
+                        var $url_get_recomendacion_usuario = "/sistemas_colaborativos/" + $text_1 + "/recomendar_usuario/";
+                        console.log($url_get_recomendacion_usuario)
+                        $.getJSON($url_get_recomendacion_usuario, function (jsonFromFile) {
+
+                            var for_user = {total:1, rows: jsonFromFile.data};
+                            $('#table_6').bootstrapTable(jsonFromFile.data);
+                            $('#table_6').bootstrapTable('load', for_user);
+                        });
+                    }
+
 
                 });
 
@@ -271,6 +297,11 @@
                       </div>
                   </div>
                 </form>
+
+                <panel id="pnlCategories">
+                    <select id="category-dropdown" name="category">
+                    </select>
+                </panel>
 
                  <div> <label></label></div>
 
