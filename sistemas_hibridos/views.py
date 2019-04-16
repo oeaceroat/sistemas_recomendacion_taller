@@ -28,15 +28,15 @@ def get_recomendacion(request,usuario):
         print('Nuevo usuario')
         message = 'new_user'
         data = [
-            {'res_id': 'r1', 'res_name': 'restaurante 1'},
-            {'res_id': 'r2', 'res_name': 'restaurante 2'},
-            {'res_id': 'r3', 'res_name': 'restaurante 3'},
-            {'res_id': 'r4', 'res_name': 'restaurante 4'},
-            {'res_id': 'r5', 'res_name': 'restaurante 5'}
+            {'category_id': 'r1', 'category_name': 'categoria 1'},
+            {'category_id': 'r2', 'category_name': 'categoria 2'},
+            {'category_id': 'r3', 'category_name': 'categoria 3'},
+            {'category_id': 'r4', 'category_name': 'categoria 4'},
+            {'category_id': 'r5', 'category_name': 'categoria 5'}
         ]
     else:
         print('Lista de recomendación')
-        message = 'Hola ' + usuario + ', encuentra a tus artistas favoritos y descubre muchosssss más'
+        message = 'Hola ' + usuario + ', encuentra a tu restaurante favorito y descubre muchosssss más'
         data = []
 
     print('...................... ', message )

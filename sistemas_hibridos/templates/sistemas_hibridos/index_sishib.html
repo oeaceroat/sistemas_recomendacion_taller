@@ -19,7 +19,7 @@
 <script>
 
      $(document).ready(function(){
-
+         $("#pnlCategories").hide();
 
          $('#btnSearch_1').on('click', function (e) {
 
@@ -35,7 +35,15 @@
                     var $message = jsonFromFile.message
 
                     if ($message == "new_user") {
+
+                        $("#pnlCategories").show();
+
+                        $("#msgRecomendar").hide();
+
                         console.log("mostar menú de categorias")
+
+                        let msgCategorias = document.getElementById('msgCategorias');
+                        msgCategorias.innerText = $text_1 + ", cuentanos lo que más te gusta y vuleve a intentar" ;
 
 
                         let dropdown = $('#category-dropdown');
@@ -51,13 +59,15 @@
                         //$.getJSON(url, function (data) {
                           var $categories = jsonFromFile.data
                           $.each($categories, function (key, entry) {
-                            dropdown.append($('<option></option>').attr('value', entry.res_id).text(entry.res_name));
+                            dropdown.append($('<option></option>').attr('value', entry.category_id).text(entry.category_name));
                           })
                         //});
 
 
 
                     } else {
+                        $("#pnlCategories").hide();
+                        $("#msgRecomendar").show();
                         console.log("mostrar reconedacions usuario existente")
                         let msgRecomendar = document.getElementById('msgRecomendar');
                         msgRecomendar.innerText = $message;
@@ -298,9 +308,23 @@
                   </div>
                 </form>
 
-                <panel id="pnlCategories">
-                    <select id="category-dropdown" name="category">
-                    </select>
+                <panel id="pnlCategories" hide="True">
+                    <div>
+                          <label id="msgCategorias"></label>
+                    </div>
+
+                    <div class="form-row">
+                    <div class="col-4">
+                         <select id="category-dropdown" name="category"></select>
+                    </div>
+                    <div class="col">
+                     <button type="button" class="btn btn-primary" id="addGusto">Agregar gusto</button>
+                    </div>
+
+                  </div>
+
+
+
                 </panel>
 
                  <div> <label></label></div>
