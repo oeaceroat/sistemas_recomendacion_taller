@@ -50,6 +50,33 @@ def get_recomendacion(request,usuario):
     return JsonResponse(response_data)
 
 
+def add_user(request,user,category):
+    collection = db.user
+    current_user = collection.find_one({'user_id': user})
+    message = ''
+    data = []
+    if current_user is None:
+        print('Crear nuevo usuario')
+        new_user = {
+            'user_id': user,
+            'category': [category]
+        }
+
+        new_user = collection.insert_one(new_user)
+        print(new_user.inserted_id)
+        message = 'user_created'
+
+    else:
+        print('Usuario ya existe')
+        message = 'user_not_created'
+
+    response_data = {}
+    response_data['message'] = message
+    response_data['data'] = data
+    print(message)
+
+    return JsonResponse(response_data)
+
 
 def search_restaurante(request, restaurant):
 
@@ -236,6 +263,8 @@ def get_recomendacion_user(reuest, usuario):
 
     print(response_data)
     return JsonResponse(response_data)
+
+
 
 
 

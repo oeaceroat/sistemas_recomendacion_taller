@@ -36,7 +36,8 @@
 
                     if ($message == "new_user") {
 
-                        $("#pnlCategories").show();
+                        $('#exampleModal').modal('show')
+
 
                         $("#msgRecomendar").hide();
 
@@ -50,23 +51,20 @@
 
                         dropdown.empty();
 
-                        dropdown.append('<option selected="true" disabled>Dinos lo que más te gusta</option>');
+                        dropdown.append('<option selected="true" disabled>Selecciona una opción</option>');
                         dropdown.prop('selectedIndex', 0);
 
-                        //const url = 'https://api.myjson.com/bins/7xq2x';
 
-                        // Populate dropdown with list of provinces
-                        //$.getJSON(url, function (data) {
                           var $categories = jsonFromFile.data
                           $.each($categories, function (key, entry) {
                             dropdown.append($('<option></option>').attr('value', entry.category_id).text(entry.category_name));
                           })
-                        //});
+
 
 
 
                     } else {
-                        $("#pnlCategories").hide();
+                        $('#exampleModal').modal('hide')
                         $("#msgRecomendar").show();
                         console.log("mostrar reconedacions usuario existente")
                         let msgRecomendar = document.getElementById('msgRecomendar');
@@ -123,6 +121,26 @@
                 let msgClificar = document.getElementById('msgClificar');
                  msgClificar.innerText = "";
          });
+
+
+
+          $('#btnCategory').on('click', function (e) {
+
+                var $text_1 = $('#text_1').val();
+                var $cat = $("#category-dropdown option:selected").text();
+
+                console.log("var " + $cat);
+
+                var $url_add_user = "/sistemas_hibridos/" + $text_1 + "/" + $cat + "/crear_usuario/";
+                console.log($url_add_user)
+                $.getJSON($url_add_user, function (jsonFromFile) {
+
+                });
+
+                $('#exampleModal').modal('hide')
+          });
+
+
 
           $('#btnSearchTrack').on('click', function (e) {
 
@@ -308,24 +326,40 @@
                   </div>
                 </form>
 
-                <panel id="pnlCategories" hide="True">
-                    <div>
-                          <label id="msgCategorias"></label>
-                    </div>
 
-                    <div class="form-row">
-                    <div class="col-4">
-                         <select id="category-dropdown" name="category"></select>
-                    </div>
-                    <div class="col">
-                     <button type="button" class="btn btn-primary" id="addGusto">Agregar gusto</button>
-                    </div>
 
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Nuevo Usuario</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                      </div>
+                      <div class="modal-body">
+                         <div>
+                              <label id="msgCategorias"></label>
+                                </div>
+
+                                <div class="form-row">
+                                <div class="col-4">
+                                     <select id="category-dropdown" name="category"></select>
+                                </div>
+
+                          </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button id="btnCategory" type="button" class="btn btn-primary">Guardar</button>
+                      </div>
+                    </div>
                   </div>
+                </div>
 
 
-
-                </panel>
 
                  <div> <label></label></div>
 

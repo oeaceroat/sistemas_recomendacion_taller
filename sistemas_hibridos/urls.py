@@ -7,6 +7,8 @@ app_name = 'sistemas_hibridos'
 urlpatterns = [
     path('', views.index, name='index'),
     path('<str:usuario>/recomendar/', views.get_recomendacion, name='get_recomendacion'),
+    path('<str:user>/<str:category>/crear_usuario/', views.add_user, name='add_user'),
+
     path('<str:restaurant>/buscar_restaurante/', views.search_restaurante, name='buscar_restaurante'),
     path('<str:user>/<str:traname>/<str:rating>/calificar/', views.calificar, name='calificar'),
     path('populares/', views.populares, name='populares'),
