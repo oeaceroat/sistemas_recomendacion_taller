@@ -36,7 +36,7 @@ def get_recomendacion(request,usuario):
         ]
     else:
         print('Lista de recomendación')
-        message = 'Hola ' + usuario + ', encuentra a tu restaurante favorito y descubre muchosssss más'
+        message = 'Hola ' + usuario + ', descrubre los mejores restaurantes para tí'
         data = []
 
     print('...................... ', message )
