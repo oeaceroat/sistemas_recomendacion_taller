@@ -6,8 +6,9 @@ from . import views
 app_name = 'sistemas_hibridos'
 urlpatterns = [
     path('', views.index, name='index'),
+    path('categories/', views.get_categories, name='get_categories'),
     path('<str:usuario>/recomendar/', views.get_recomendacion, name='get_recomendacion'),
-    path('<str:user>/<str:category>/crear_usuario/', views.add_user, name='add_user'),
+    path('<str:user>/<str:state>/<str:category>/crear_usuario/', views.add_user, name='add_user'),
 
     path('<str:restaurant>/buscar_restaurante/', views.search_restaurante, name='buscar_restaurante'),
     path('<str:user>/<str:traname>/<str:rating>/calificar/', views.calificar, name='calificar'),

@@ -8,7 +8,7 @@ client = MongoClient()
 client = MongoClient('127.0.0.1', 27017)
 
 
-db = client.sisrec_taller1
+db = client.sisrec_taller2
 
 
 def index(request):
@@ -17,23 +17,46 @@ def index(request):
     return render(request, 'sistemas_hibridos/index_sishib.html', context)
 
 
+def get_states():
+
+    states = db.state.find().sort('state', 1)
+    data = []
+
+    for t in states:
+        obj = {'id_state': t['id_state'],
+               'state': t['state']}
+        data.append(obj)
+
+    return data
+
+
+def get_categories():
+
+    categories = db.category.find().sort('count', -1).limit(10)
+    data = []
+
+    for t in categories:
+        obj = {'id_category': t['id_category'],
+               'category': t['category']}
+        data.append(obj)
+
+    return data
+
 
 def get_recomendacion(request,usuario):
 
-    collection = db.user
-    user = collection.find_one({'user_id':usuario})
+    #collection = db.user
+    user = db.user.find_one({'user_id':usuario})
     message = ''
-    data = []
+    categories = []
     if user is None:
         print('Nuevo usuario')
         message = 'new_user'
-        data = [
-            {'category_id': 'r1', 'category_name': 'categoria 1'},
-            {'category_id': 'r2', 'category_name': 'categoria 2'},
-            {'category_id': 'r3', 'category_name': 'categoria 3'},
-            {'category_id': 'r4', 'category_name': 'categoria 4'},
-            {'category_id': 'r5', 'category_name': 'categoria 5'}
-        ]
+
+        categories = get_categories()
+        states = get_states()
+
+
     else:
         print('Lista de recomendación')
         message = 'Hola ' + usuario + ', descrubre los mejores restaurantes para tí'
@@ -41,16 +64,16 @@ def get_recomendacion(request,usuario):
 
     print('...................... ', message )
 
+    response_data = {'message': message,
+                     'categories': categories,
+                     'states': states}
 
-    response_data = {}
-    response_data['message'] = message
-    response_data['data'] = data
     print(message)
 
     return JsonResponse(response_data)
 
 
-def add_user(request,user,category):
+def add_user(request,user,state,category):
     collection = db.user
     current_user = collection.find_one({'user_id': user})
     message = ''
@@ -59,6 +82,7 @@ def add_user(request,user,category):
         print('Crear nuevo usuario')
         new_user = {
             'user_id': user,
+            'state': state,
             'category': [category]
         }
 
