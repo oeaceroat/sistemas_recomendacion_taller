@@ -20,7 +20,7 @@ client = MongoClient('127.0.0.1', 27017)
 
 db = client.sisrec_taller2
 
-_, loaded_algo = dump.load('../../sistemas_recomendacion/sistema_recomendacion/sistemas_colaborativos/dump_file')
+_, loaded_algo = dump.load('../../sistemas_recomendacion/sistema_recomendacion/sistemas_hibridos/dump_file')
 n = 10
 
 print("Model SVD", loaded_algo)
@@ -220,7 +220,9 @@ def populares(request):
 def actividad(request, user):
     current_user = db.user.find_one({'user_name': user})
     user_id = current_user['user_id']
-    user_ratings = db.rating.find({'user_id': user_id}).sort('_id', -1).limit(50)
+    user_ratings = db.rating.find({'user_id': user_id}).sort([('stars', pymongo.DESCENDING), ('_id', pymongo.DESCENDING)]).limit(50)
+
+    #sort([("field1", pymongo.ASCENDING), ("field2", pymongo.DESCENDING)])
 
     data = []
 
@@ -316,6 +318,8 @@ def get_recomendacion_user(reuest, usuario):
         rated_items = db.rating.find({'user_id': user_id}).distinct('business_id')
         unrated_items = db.rating.find({"$and": [{'business_id': {'$nin': rated_items}},
                                                  {'state': user_state}]}).distinct('business_id')
+
+        #unrated_items = db.rating.find({'business_id': {'$nin': rated_items}}).distinct('business_id')
 
         # unrated_items = db.rating.find({'user_id': {"$ne": user_id}}).distinct("business_id")
         print(len(rated_items), " items calificados")
