@@ -65,7 +65,7 @@ def add_user(request, user, state, category):
         new_user = {
             'user_id': user,
             'user_name': user,
-            'state': state,
+            'id_state': state,
             'profile': [category],
             'status': 'new'
         }
@@ -300,20 +300,51 @@ def add_track(request, traname, artname):
 
 def get_recomendacion_user(reuest, usuario):
     current_user = db.user.find_one({'user_name': usuario})
+    print("usuario activo: ", current_user)
+    profile = current_user['profile']
+    user_state = current_user["id_state"]
+
+    #profile_str =
+
     try:
         status = current_user['status']
     except:
         status = ''
 
     data = []
+    list_rec_1 = []
+
     if status == 'new':
         print("Usuario no entrenado con SVD")
+        message = "new_user"
+
+        list_1 = db.new_user_list.find_one({"$and": [{"state": user_state},
+                                                     {"category_list_1": profile[0]}]})
+
+        print("lista usuario nuevo: ", list_1)
+
+        l1 = list_1['list_1']
+        l1_stars = list_1['stars_list_1']
+
+        for i, rating in zip(l1, l1_stars):
+
+            item = db.business.find_one({"business_id": i})
+
+            obj = {'name': item['name'],
+                   'categories': item['categories'],
+                   'address': item['address'],
+                   'state': item['state'],
+                   'city': item['city'],
+                   # 'hours': item['hours'],
+                   'rating': rating
+                   }
+            list_rec_1.append(obj)
 
     else:
-
+        message = "old_user"
         print("Usuario pre-entrenado con SVD")
         user_id = current_user["user_id"]
-        user_state = current_user["id_state"]
+
 
         rated_items = db.rating.find({'user_id': user_id}).distinct('business_id')
         unrated_items = db.rating.find({"$and": [{'business_id': {'$nin': rated_items}},
@@ -353,7 +384,9 @@ def get_recomendacion_user(reuest, usuario):
 
     response_data = {}
     response_data["data"] = data
-
+    response_data["list_1"] = list_rec_1
+    response_data["message"] = message
+    response_data["profile"] = profile
     print(response_data)
     return JsonResponse(response_data)
 
