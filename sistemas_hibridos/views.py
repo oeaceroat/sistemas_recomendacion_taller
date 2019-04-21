@@ -313,6 +313,7 @@ def get_recomendacion_user(reuest, usuario):
 
     data = []
     list_rec_1 = []
+    list_rec_2 = []
 
     if status == 'new':
         print("Usuario no entrenado con SVD")
@@ -339,6 +340,26 @@ def get_recomendacion_user(reuest, usuario):
                    'rating': rating
                    }
             list_rec_1.append(obj)
+
+        list_2 = db.new_user_list.find_one({"$and": [{"state": user_state},
+                                                     {"category_list_2": profile[0]}]})
+
+        l2 = list_1['list_2']
+        l2_stars = list_1['stars_list_2']
+
+        for i, rating in zip(l2, l2_stars):
+
+            item = db.business.find_one({"business_id": i})
+
+            obj = {'name': item['name'],
+                   'categories': item['categories'],
+                   'address': item['address'],
+                   'state': item['state'],
+                   'city': item['city'],
+                   # 'hours': item['hours'],
+                   'rating': rating
+                   }
+            list_rec_2.append(obj)
 
     else:
         message = "old_user"
@@ -385,6 +406,7 @@ def get_recomendacion_user(reuest, usuario):
     response_data = {}
     response_data["data"] = data
     response_data["list_1"] = list_rec_1
+    response_data["list_2"] = list_rec_2
     response_data["message"] = message
     response_data["profile"] = profile
     print(response_data)
