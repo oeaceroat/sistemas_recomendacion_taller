@@ -2,23 +2,36 @@ from django.shortcuts import render
 import pymongo
 from pymongo import MongoClient
 from django.http import JsonResponse
-import json
+
+from surprise import SVD
+from surprise import Dataset
+from surprise import dump
+from collections import OrderedDict
+from collections import defaultdict
+from itertools import islice
+import os
+
+cwd = os.getcwd()
+
+print("Current directory : ", cwd)
 
 client = MongoClient()
 client = MongoClient('127.0.0.1', 27017)
 
-
 db = client.sisrec_taller2
+
+_, loaded_algo = dump.load('../../sistemas_recomendacion/sistema_recomendacion/sistemas_colaborativos/dump_file')
+n = 10
+
+print("Model SVD", loaded_algo)
 
 
 def index(request):
-
     context = {}
     return render(request, 'sistemas_hibridos/index_sishib.html', context)
 
 
 def get_states():
-
     states = db.state.find().sort('state', 1)
     data = []
 
@@ -31,7 +44,6 @@ def get_states():
 
 
 def get_categories():
-
     categories = db.category.find().sort('count', -1).limit(10)
     data = []
 
@@ -43,37 +55,7 @@ def get_categories():
     return data
 
 
-def get_recomendacion(request,usuario):
-
-    #collection = db.user
-    user = db.user.find_one({'user_id':usuario})
-    message = ''
-    categories = []
-    if user is None:
-        print('Nuevo usuario')
-        message = 'new_user'
-
-        categories = get_categories()
-        states = get_states()
-
-
-    else:
-        print('Lista de recomendación')
-        message = 'Hola ' + usuario + ', descrubre los mejores restaurantes para tí'
-        data = []
-
-    print('...................... ', message )
-
-    response_data = {'message': message,
-                     'categories': categories,
-                     'states': states}
-
-    print(message)
-
-    return JsonResponse(response_data)
-
-
-def add_user(request,user,state,category):
+def add_user(request, user, state, category):
     collection = db.user
     current_user = collection.find_one({'user_id': user})
     message = ''
@@ -82,8 +64,10 @@ def add_user(request,user,state,category):
         print('Crear nuevo usuario')
         new_user = {
             'user_id': user,
+            'user_name': user,
             'state': state,
-            'category': [category]
+            'profile': [category],
+            'status': 'new'
         }
 
         new_user = collection.insert_one(new_user)
@@ -102,99 +86,49 @@ def add_user(request,user,state,category):
     return JsonResponse(response_data)
 
 
-def search_restaurante(request, restaurant):
+def get_recomendacion(request, usuario):
+    user = db.user.find_one({'user_name': usuario})
 
+    categories = []
+    states = []
+    message_2 = ''
+    if user is None:
+        print('Nuevo usuario')
+        message = 'new_user'
+
+        categories = get_categories()
+        states = get_states()
+
+    else:
+        print('Lista de recomendación')
+        message = 'Hola ' + usuario + ', descrubre los mejores restaurantes para tí'
+        data = []
+
+        ratings = user
+
+    print('...................... ', message)
+
+    response_data = {'message': message,
+                     'categories': categories,
+                     'states': states}
+
+    print(message)
+
+    return JsonResponse(response_data)
+
+
+def search_restaurante(request, restaurant):
     collection = db.restaurant
     cursor_track = collection.find({'artname': {'$regex': '.*' + restaurant + '.*', '$options': 'i'}})
-
 
     data = []
 
     for t in cursor_track:
-
         obj = {}
 
-        #obj['traname'] = t['traname']
+        # obj['traname'] = t['traname']
         obj['artname'] = t['artname']
 
-        data.append(obj)
-
-    response_data = {}
-    response_data["data"] = data
-
-    print (response_data)
-    return JsonResponse(response_data)
-
-
-def calificar(request,user,artname,rating):
-
-    collection = db.rating
-    collection2 = db.rating_prediction
-
-    current_rating = collection.find_one({'userid': user, 'artname': artname})
-    estimated_rating = collection2.find_one({'userid': user, 'artname': artname})
-
-    new_rating = {'userid': user,
-                  'artname': artname,
-                  #'traname': traname,
-                  'blend_rank': int(rating)
-                  }
-
-    if current_rating is None:
-        if estimated_rating is not None:
-            deleted_rating = collection2.delete_many({'userid': user, 'artname': artname})
-
-        r = collection.insert_one(new_rating)
-        id = str( r.inserted_id)
-        print('Nuevo rating: ' + id)
-
-
-
-    else:
-
-        if estimated_rating is not None:
-            deleted_rating = collection2.delete_many({'userid': user, 'artname': artname})
-
-        deleted_rating = collection.delete_many({'userid': user, 'artname': artname})
-
-        r = collection.insert_one(new_rating)
-        id = str(r.inserted_id)
-        print('Rating actualizado: ' + id)
-
-    message = user + ' has calificado con  ' + rating + ' puntos a ' + artname
-
-    response_data = {}
-    response_data['message'] = message
-    print(message)
-    return JsonResponse(response_data)
-
-
-def populares(request):
-
-    collection = db.rating
-
-    top = collection.aggregate([
-        {'$group': {
-            "_id": {
-                'artname': '$artname',
-          #      'traname': '$traname'
-            },
-            'rating_count': {'$sum': 1},
-            'rating_avg': {'$avg': '$blend_rank'}
-        }},
-        {"$match": {"rating_avg": {"$gte":4.0}, "rating_count": {"$gte":10} }},
-        {'$sort': {'rating_count': -1, }},
-        {'$limit': 20}
-    ])
-
-    data = []
-
-    for t in top:
-        obj = {}
-   #     obj['traname'] = t['_id']['traname']
-        obj['artname'] = t['_id']['artname']
-        obj['rating_count'] = t['rating_count']
-        obj['rating_avg'] = t['rating_avg']
         data.append(obj)
 
     response_data = {}
@@ -204,18 +138,103 @@ def populares(request):
     return JsonResponse(response_data)
 
 
-def actividad(request, user):
+def calificar(request, user, restaurant, rating):
+    # collection = db.rating
+    # collection2 = db.rating_prediction
+    current_user = db.user.find_one({'user_name': user})
+    user_id = current_user['user_id']
+    current_restaurant = db.business.find_one({"name": restaurant})
+    restaurant_id = current_restaurant["business_id"]
 
-    collection = db.rating
-    user_ratings = collection.find({'userid': user}).sort('_id', -1).limit(500)
+    current_rating = db.rating.find_one({'user_id': user_id, 'business_id': restaurant_id})
+    # estimated_rating = collection2.find_one({'userid': user, 'artname': artname})
+
+    new_rating = {'user_id': user_id,
+                  'business_id': restaurant_id,
+                  'stars': int(rating),
+                  'client_state': current_user['id_state'],
+                  'city': current_restaurant['city'],
+                  'state': current_restaurant['state']
+                  }
+
+    if current_rating is None:
+
+        r = db.rating.insert_one(new_rating)
+        id = str(r.inserted_id)
+        print('Nuevo rating: ' + id)
+    else:
+        deleted_rating = db.rating.delete_many({'user_id': user_id, 'business_id': restaurant_id})
+        r = db.rating.insert_one(new_rating)
+        id = str(r.inserted_id)
+        print('Rating actualizado: ' + id)
+
+    message = user + ' has calificado con  ' + rating + ' puntos a ' + current_restaurant['name']
+
+    response_data = {}
+    response_data['message'] = message
+    print(message)
+    return JsonResponse(response_data)
+
+
+def populares(request):
+
+    top = db.rating.aggregate([
+        {'$group': {
+            "_id": {
+                'business_id': '$business_id',
+                #      'traname': '$traname'
+            },
+            'rating_count': {'$sum': 1},
+            'rating_avg': {'$avg': '$stars'}
+        }},
+        {"$match": {"rating_avg": {"$gte": 4.0}, "rating_count": {"$gte": 10}}},
+        {'$sort': {'rating_count': -1, }},
+        {'$limit': 10}
+    ])
+
+    data = []
+
+    for t in top:
+        item_id = t['_id']['business_id']
+        item = db.business.find_one({'business_id': item_id})
+
+        obj = {'name': item['name'],
+               'categories': item['categories'],
+               'address': item['address'],
+               'state': item['state'],
+               'city': item['city'],
+               'rating_count': float("{0:.2f}".format(t['rating_count'])),
+               'rating_avg': float("{0:.2f}".format(t['rating_avg']))
+               }
+
+        data.append(obj)
+
+
+    response_data = {}
+    response_data["data"] = data
+
+    print(response_data)
+    return JsonResponse(response_data)
+
+
+def actividad(request, user):
+    current_user = db.user.find_one({'user_name': user})
+    user_id = current_user['user_id']
+    user_ratings = db.rating.find({'user_id': user_id}).sort('_id', -1).limit(50)
 
     data = []
 
     for t in user_ratings:
-        obj = {}
-  #      obj['traname'] = t['traname']
-        obj['artname'] = t['artname']
-        obj['blend_rank'] = t['blend_rank']
+        item_id = t['business_id']
+        item = db.business.find_one({'business_id': item_id})
+        obj = {'name': item['name'],
+               'categories': item['categories'],
+               'address': item['address'],
+               'state': item['state'],
+               'city': item['city'],
+               # 'hours': item['hours'],
+               'rating': float("{0:.2f}".format(t['stars']))
+               }
         data.append(obj)
 
     response_data = {}
@@ -226,15 +245,23 @@ def actividad(request, user):
 
 
 def lanzamientos(request):
-    collection = db.restaurant
-    new_tracks = collection.find().sort('_id', -1).limit(50)
+
+    new_restaurants = db.business.find().sort('_id', -1).limit(15)
 
     data = []
 
-    for t in new_tracks:
-        obj = {}
-     #   obj['traname'] = t['traname']
-        obj['artname'] = t['artname']
+    for t in new_restaurants:
+
+        item_id = t['business_id']
+        item = db.business.find_one({'business_id': item_id})
+
+        obj = {'name': item['name'],
+               'categories': item['categories'],
+               'address': item['address'],
+               'state': item['state'],
+               'city': item['city']
+               }
+
         data.append(obj)
 
     response_data = {}
@@ -244,8 +271,7 @@ def lanzamientos(request):
     return JsonResponse(response_data)
 
 
-def add_track(request,traname,artname):
-
+def add_track(request, traname, artname):
     collection = db.track
 
     artista = collection.find_one({'artname': artname})
@@ -253,7 +279,7 @@ def add_track(request,traname,artname):
     if artista is None:
 
         new_track = {'artname': artname
-                    }
+                     }
         t = collection.insert_one(new_track)
         id = str(t.inserted_id)
         print('Nuevo raitng: ' + id)
@@ -271,16 +297,55 @@ def add_track(request,traname,artname):
 
 
 def get_recomendacion_user(reuest, usuario):
-
-    collection = db.rating_prediction
-    user_recomendations = collection.find({'userid': usuario}).sort('est_rating', -1).limit(20)
+    current_user = db.user.find_one({'user_name': usuario})
+    try:
+        status = current_user['status']
+    except:
+        status = ''
 
     data = []
-    for t in user_recomendations:
-        obj = {}
-        obj['artname'] = t['artname']
-        obj['est_rating'] = t['est_rating']
-        data.append(obj)
+    if status == 'new':
+        print("Usuario no entrenado con SVD")
+
+    else:
+
+        print("Usuario pre-entrenado con SVD")
+        user_id = current_user["user_id"]
+        user_state = current_user["id_state"]
+
+        rated_items = db.rating.find({'user_id': user_id}).distinct('business_id')
+        unrated_items = db.rating.find({"$and": [{'business_id': {'$nin': rated_items}},
+                                                 {'state': user_state}]}).distinct('business_id')
+
+        # unrated_items = db.rating.find({'user_id': {"$ne": user_id}}).distinct("business_id")
+        print(len(rated_items), " items calificados")
+        print(len(unrated_items), " items no calificados")
+
+        top_n = get_top_n_SVD(loaded_algo, user_id, unrated_items, n)
+
+        for key, value in top_n.items():
+            item = db.business.find_one({'business_id': key})
+            obj = {'name': item['name'],
+                   'categories': item['categories'],
+                   'address': item['address'],
+                   'state': item['state'],
+                   'city': item['city'],
+                   # 'hours': item['hours'],
+                   'rating': float("{0:.2f}".format(value))
+                   }
+
+            print(key, value)
+            data.append(obj)
+
+    # collection = db.rating_prediction
+    # user_recomendations = collection.find({'userid': usuario}).sort('est_rating', -1).limit(20)
+
+    # data = []
+    # for t in user_recomendations:
+    #   obj = {}
+    #  obj['artname'] = t['artname']
+    #  obj['est_rating'] = t['est_rating']
+    #  data.append(obj)
 
     response_data = {}
     response_data["data"] = data
@@ -289,7 +354,13 @@ def get_recomendacion_user(reuest, usuario):
     return JsonResponse(response_data)
 
 
+def get_top_n_SVD(model, user_id, unrated, n):
+    user_ratings = defaultdict()
+    for i in unrated:
+        user_ratings[i] = loaded_algo.predict(uid=user_id, iid=i).est
 
+    user_ratings = OrderedDict(sorted(user_ratings.items(), key=lambda t: t[1], reverse=True))
+    top_n = dict(list(islice(user_ratings.items(), n)))
+    top_n = OrderedDict(sorted(top_n.items(), key=lambda t: t[1], reverse=True))
 
-
-
+    return top_n
