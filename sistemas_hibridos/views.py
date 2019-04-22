@@ -366,6 +366,29 @@ def get_recomendacion_user(reuest, usuario):
         print("Usuario pre-entrenado con SVD")
         user_id = current_user["user_id"]
 
+        list_1 = db.old_user_list.find_one({"user_id": user_id})
+
+        if list_1 is not None:
+
+            l1 = list_1['list_1']
+            l1_stars = list_1['stars_list_1']
+
+            for i, rating in zip(l1, l1_stars):
+
+                item = db.business.find_one({"business_id": i})
+
+                obj = {'name': item['name'],
+                       'categories': item['categories'],
+                       'address': item['address'],
+                       'state': item['state'],
+                       'city': item['city'],
+                       # 'hours': item['hours'],
+                       'rating': rating
+                       }
+                list_rec_1.append(obj)
+
+
+
 
         rated_items = db.rating.find({'user_id': user_id}).distinct('business_id')
         unrated_items = db.rating.find({"$and": [{'business_id': {'$nin': rated_items}},
