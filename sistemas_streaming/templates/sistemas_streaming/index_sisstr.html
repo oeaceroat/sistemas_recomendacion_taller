@@ -49,21 +49,7 @@
                         console.log("mostar menú de categorias")
 
                         let msgCategorias = document.getElementById('msgCategorias');
-                        msgCategorias.innerText = "Hola " + $text_1 + ", cuéntanos algo sobre tí" ;
-
-
-                        let dropdown_state = $('#state-dropdown');
-
-                        dropdown_state.empty();
-
-                        dropdown_state.append('<option selected="true" disabled>Estado/Provincia</option>');
-                        dropdown_state.prop('selectedIndex', 0);
-
-
-                         var $states = jsonFromFile.states
-                         $.each($states, function (key, entry) {
-                           dropdown_state.append($('<option></option>').attr('value', entry.id_state).text(entry.state));
-                         })
+                        msgCategorias.innerText = "Hola " + $text_1 + ", ¿Cuál de las siguientes películas te gusta más?" ;
 
 
 
@@ -71,13 +57,13 @@
 
                         dropdown.empty();
 
-                        dropdown.append('<option selected="true" disabled>Categoría</E></option>');
+                        dropdown.append('<option selected="true" disabled>Película</E></option>');
                         dropdown.prop('selectedIndex', 0);
 
 
-                         var $categories = jsonFromFile.categories
-                         $.each($categories, function (key, entry) {
-                           dropdown.append($('<option></option>').attr('value', entry.category_id).text(entry.category));
+                         var $movies = jsonFromFile.movies
+                         $.each($movies, function (key, entry) {
+                           dropdown.append($('<option></option>').attr('value', entry.movieId).text(entry.name));
                          })
 
 
@@ -123,6 +109,46 @@
                             msgcontList2.innerText = "Porque te gusta " + $user_profile + " te podría gustar";
 
 
+
+                             var $url_populares = "/sistemas_streaming/populares/";
+                            console.log($url_populares)
+
+                            $.getJSON($url_populares, function (jsonFromFile) {
+
+                                var populares = {total:1, rows: jsonFromFile.data};
+                                $('#table_3').bootstrapTable(jsonFromFile.data);
+                                $('#table_3').bootstrapTable('load', populares);
+                            });
+
+
+                            var $url_lanzamientos = "/sistemas_streaming/lanzamientos/";
+                            console.log($url_lanzamientos)
+
+                            $.getJSON($url_lanzamientos, function (jsonFromFile) {
+
+                                var lanzamientos = {total:1, rows: jsonFromFile.data};
+                                $('#table_5').bootstrapTable(jsonFromFile.data);
+                                $('#table_5').bootstrapTable('load', lanzamientos);
+
+                            });
+
+
+                            var $url_actividad = "/sistemas_streaming/" + $text_1 + "/actividad/";
+                            console.log($url_actividad)
+
+                            $.getJSON($url_actividad, function (jsonFromFile) {
+
+                                var actividad = {total:1, rows: jsonFromFile.data};
+                                $('#table_4').bootstrapTable(jsonFromFile.data);
+                                $('#table_4').bootstrapTable('load', actividad);
+
+                            });
+
+                            let msgClificar = document.getElementById('msgClificar');
+                             msgClificar.innerText = "";
+
+
+
                         });
                     }
 
@@ -130,43 +156,7 @@
                 });
 
 
-                var $url_populares = "/sistemas_streaming/populares/";
-                console.log($url_populares)
-
-                $.getJSON($url_populares, function (jsonFromFile) {
-
-                    var populares = {total:1, rows: jsonFromFile.data};
-                    $('#table_3').bootstrapTable(jsonFromFile.data);
-                    $('#table_3').bootstrapTable('load', populares);
-                });
-
-
-                var $url_lanzamientos = "/sistemas_streaming/lanzamientos/";
-                console.log($url_lanzamientos)
-
-                $.getJSON($url_lanzamientos, function (jsonFromFile) {
-
-                    var lanzamientos = {total:1, rows: jsonFromFile.data};
-                    $('#table_5').bootstrapTable(jsonFromFile.data);
-                    $('#table_5').bootstrapTable('load', lanzamientos);
-
-                });
-
-
-                var $url_actividad = "/sistemas_streaming/" + $text_1 + "/actividad/";
-                console.log($url_actividad)
-
-                $.getJSON($url_actividad, function (jsonFromFile) {
-
-                    var actividad = {total:1, rows: jsonFromFile.data};
-                    $('#table_4').bootstrapTable(jsonFromFile.data);
-                    $('#table_4').bootstrapTable('load', actividad);
-
-                });
-
-                let msgClificar = document.getElementById('msgClificar');
-                 msgClificar.innerText = "";
-         });
+          });
 
 
 
@@ -174,12 +164,12 @@
 
                 var $text_1 = $('#text_1').val();
                 var $cat = $("#category-dropdown option:selected").val();
-                var $state = $("#state-dropdown option:selected").val();
+
 
                 console.log("var " + $cat);
-                console.log("var " + $state);
 
-                var $url_add_user = "/sistemas_streaming/" + $text_1 + "/" + $state + "/" + $cat + "/crear_usuario/";
+
+                var $url_add_user = "/sistemas_streaming/" + $text_1 + "/" + $cat + "/crear_usuario/";
                 console.log($url_add_user)
                 $.getJSON($url_add_user, function (jsonFromFile) {
 
@@ -401,15 +391,10 @@
                          <div>
                               <label id="msgCategorias"></label>
                          </div>
-                          <div class="form-row">
-                            <label>¿Dónde te encuentras?</label>
-                            <div class="col-4">
-                                 <select id="state-dropdown" name="state"></select>
-                            </div>
-                          </div>
+
                           <label></label>
                           <div class="form-row">
-                            <label>  ¿Qué te gusta más?  </label>
+
                             <div class="col-4">
                                  <select id="category-dropdown" name="category"></select>
                             </div>

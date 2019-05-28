@@ -6,9 +6,9 @@ from . import views
 app_name = 'sistemas_streaming'
 urlpatterns = [
     path('', views.index, name='index'),
-    path('categories/', views.get_categories, name='get_categories'),
+    path('categories/', views.get_movies, name='get_categories'),
     path('<str:usuario>/recomendar/', views.get_recomendacion, name='get_recomendacion'),
-    path('<str:user>/<str:state>/<str:category>/crear_usuario/', views.add_user, name='add_user'),
+    path('<str:user>/<str:movie>/crear_usuario/', views.add_user, name='add_user'),
 
     path('<str:movie>/buscar_pelicula/', views.search_movie, name='buscar_pelicula'),
     path('<str:user>/<str:movie>/<str:rating>/calificar/', views.calificar, name='calificar'),

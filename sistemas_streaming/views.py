@@ -44,21 +44,41 @@ def get_states():
     return data
 
 
-def get_categories():
-    categories = db.category.find().sort('count', -1).limit(10)
+def get_movies():
+    movies = db.rating_1.aggregate([
+        {'$group': {
+            "_id": {
+                'movieId': '$movieId',
+                #      'traname': '$traname'
+            },
+            'rating_count': {'$sum': 1},
+        }},
+        {"$match": {"rating_count": {"$gte": 1000}}},
+        {'$sort': {'rating_count': -1, }},
+        {'$limit': 20}
+    ])
+
+
     data = []
 
-    for t in categories:
-        obj = {'id_category': t['id_category'],
-               'category': t['category']}
+    for t in movies:
+        item_id = t['_id']['movieId']
+        item = db.movie.find_one({'movieId': item_id})
+
+        obj = {
+                'movieId': item['movieId'],
+                'name': item['title']
+               }
+
         data.append(obj)
 
     return data
 
 
-def add_user(request, user, state, category):
-    collection = db.user
+def add_user(request, user, movie):
+    collection = db.user_1
     current_user = collection.find_one({'user_id': user})
+
     message = ''
     data = []
     if current_user is None:
@@ -66,14 +86,15 @@ def add_user(request, user, state, category):
         new_user = {
             'user_id': user,
             'user_name': user,
-            'id_state': state,
-            'profile': [category],
-            'status': 'new'
+            'svd': "0",
+            'graph': "0"
         }
 
         new_user = collection.insert_one(new_user)
         print(new_user.inserted_id)
         message = 'user_created'
+
+        #Crear rating y relaciones en el grafo
 
     else:
         print('Usuario ya existe')
@@ -90,13 +111,13 @@ def add_user(request, user, state, category):
 def get_recomendacion(request, usuario):
     user = db.user_1.find_one({'user_name': usuario})
 
-
+    movies = []
     message_2 = ''
     if user is None:
         print('Nuevo usuario')
         message = 'new_user'
 
-        #categories = get_categories()
+        movies = get_movies()
         #states = get_states()
 
     else:
@@ -109,7 +130,7 @@ def get_recomendacion(request, usuario):
     print('...................... ', message)
 
     response_data = {'message': message,
-                     #'categories': categories,
+                     'movies': movies,
                      #'states': states
                      }
 
@@ -125,7 +146,7 @@ def search_movie(request, movie):
     data = []
 
     for t in cursor_movie:
-        obj = {'name': t['movie'],
+        obj = {'name': t['title'],
                'genres': t['genres'],
                'directorName': t['directorName'],
                'ActorName': t['ActorName']}
@@ -143,7 +164,7 @@ def calificar(request, user, movie, rating):
     # collection2 = db.rating_prediction
     current_user = db.user_1.find_one({'user_name': user})
     user_id = current_user['user_id']
-    current_movie = db.movie.find_one({"movie": movie})
+    current_movie = db.movie.find_one({"title": movie})
     movie_id = current_movie["movieId"]
 
     current_rating = db.rating_1.find_one({'userId': user_id, 'movieId': movie_id})
@@ -169,7 +190,7 @@ def calificar(request, user, movie, rating):
         id = str(r.inserted_id)
         print('Rating actualizado: ' + id)
 
-    message = user + ' has calificado con  ' + rating + ' puntos a ' + current_movie['movie']
+    message = user + ' has calificado con  ' + rating + ' puntos a ' + current_movie['title']
 
     response_data = {}
     response_data['message'] = message
@@ -199,7 +220,7 @@ def populares(request):
         item_id = t['_id']['movieId']
         item = db.movie.find_one({'movieId': item_id})
 
-        obj = {'name': item['movie'],
+        obj = {'name': item['title'],
                'genres': item['genres'],
                'directorName': item['directorName'],
                'ActorName': item['ActorName'],
@@ -229,7 +250,7 @@ def actividad(request, user):
     for t in user_ratings:
         item_id = t['movieId']
         item = db.movie.find_one({'movieId': item_id})
-        obj = {'name': item['movie'],
+        obj = {'name': item['title'],
                'genres': item['genres'],
                'directorName': item['directorName'],
                'ActorName': item['ActorName'],
@@ -255,7 +276,7 @@ def lanzamientos(request):
         item_id = t['movieId']
         item = db.movie.find_one({'movieId': item_id})
 
-        obj = {'name': item['movie'],
+        obj = {'name': item['title'],
                 'genres': item['genres'],
                 'directorName': item['directorName'],
                 'ActorName': item['ActorName']
@@ -371,7 +392,7 @@ def get_recomendacion_user(reuest, usuario):
 
         for key, value in top_n.items():
             item = db.movie.find_one({'movieId': key})
-            obj = {'name': item['movie'],
+            obj = {'name': item['title'],
                    'genres': item['genres'],
                    'directorName': item['directorName'],
                    'ActorName': item['ActorName'],
