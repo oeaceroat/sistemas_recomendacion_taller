@@ -20,5 +20,6 @@ urlpatterns = [
     path('home/', include('home.urls')),
     path('sistemas_colaborativos/', include('sistemas_colaborativos.urls')),
     path('sistemas_hibridos/', include('sistemas_hibridos.urls')),
+    path('sistemas_streaming/', include('sistemas_streaming.urls')),
     path('admin/', admin.site.urls),
 ]

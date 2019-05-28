@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'sistemas_colaborativos.apps.SistemasColaborativosConfig',
     'sistemas_hibridos.apps.SistemasHibridosConfig',
+    'sistemas_streaming.apps.SistemasStreamingConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

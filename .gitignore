@@ -1,3 +1,4 @@
 *.pyc
 *.swp
 .idea
+sistemas_streaming/dump_file
