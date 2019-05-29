@@ -45,15 +45,15 @@ def get_states():
 
 
 def get_movies():
-    movies = db.rating_1.aggregate([
+    movies = db.ontology_list.aggregate([
         {'$group': {
             "_id": {
-                'movieId': '$movieId',
+                'movieId': '$Movie',
                 #      'traname': '$traname'
             },
             'rating_count': {'$sum': 1},
         }},
-        {"$match": {"rating_count": {"$gte": 1000}}},
+        {"$match": {"rating_count": {"$gte": 1}}},
         {'$sort': {'rating_count': -1, }},
         {'$limit': 20}
     ])
@@ -63,11 +63,11 @@ def get_movies():
 
     for t in movies:
         item_id = t['_id']['movieId']
-        item = db.movie.find_one({'movieId': item_id})
+        item = db.movie.find_one({'movie': item_id})
 
         obj = {
                 'movieId': item['movieId'],
-                'name': item['title']
+                'name': item['movie']
                }
 
         data.append(obj)
@@ -276,7 +276,7 @@ def lanzamientos(request):
         item_id = t['movieId']
         item = db.movie.find_one({'movieId': item_id})
 
-        obj = {'name': item['title'],
+        obj = {'name': item['movie'],
                 'genres': item['genres'],
                 'directorName': item['directorName'],
                 'ActorName': item['ActorName']
@@ -340,30 +340,26 @@ def get_recomendacion_user(reuest, usuario):
         print("Usuario pre-entrenado con SVD")
         user_id = current_user["user_id"]
 
-        #Aplicar grafo
-        '''
-        list_1 = db.old_user_list.find_one({"user_id": user_id})
+        #Aplicar ontología
+
+        list_1 = db.ontology_list.find({"Users": str(user_id)})
+        #list_1 = db.old_user_list.find_one({"user_id": user_id})
 
         if list_1 is not None:
 
-            l1 = list_1['list_1']
-            l1_stars = list_1['stars_list_1']
+            for t in list_1:
+                item_id = t['Movie']
+                item = db.movie.find_one({'movie': item_id})
 
-            for i, rating in zip(l1, l1_stars):
-
-                item = db.business.find_one({"business_id": i})
-
-                obj = {'name': item['name'],
-                       'categories': item['categories'],
-                       'address': item['address'],
-                       'state': item['state'],
-                       'city': item['city'],
-                       # 'hours': item['hours'],
-                       'rating': rating
+                obj = {'name': item['title'],
+                       'genres': item['genres'],
+                       'directorName': item['directorName'],
+                       'ActorName': item['ActorName']
                        }
+
                 list_rec_1.append(obj)
 
-        '''
+
 
         print("user_id ", user_id)
         rated_items = db.rating_1.find({'userId': user_id})
